@@ -1,0 +1,76 @@
+[tool.poetry]
+name = "tracker-service"
+version = "0.1.0"
+description = ""
+authors = ["disdreamq <wlad050303@yandex.ru>"]
+readme = ""
+
+[tool.poetry.dependencies]
+python = "^3.12"
+httpx = "^0.28.1"
+beautifulsoup4 = "^4.14.3"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.48"}
+alembic = "^1.18.4"
+asyncpg = "^0.31.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^26.3.1"
+mypy = "^1.19.1"
+ruff = "^0.15.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # PyCodeStyle errors
+    "W",   # PyCodeStyle warnings
+    "F",   # Pyflakes
+    "I",   # isort (import sorting)
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "PERF", # perflint
+    "RUF", # Ruff-specific rules
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"  # Also: "pep257", "numpy", or "google"
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src",
+    ".",
+]
