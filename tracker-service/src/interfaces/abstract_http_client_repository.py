@@ -6,6 +6,6 @@ T = TypeVar("T")
 class IHTTPClientRepository[T](ABC):
     """Interface for HTTP client"""
     @abstractmethod
-    def get(self, url: str) -> T:
+    async def get(self, url: str) -> T:
         raise NotImplementedError
 
