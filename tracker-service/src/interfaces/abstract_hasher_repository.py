@@ -5,5 +5,5 @@ class IHasherRepository(ABC):
     """Interface for hasher"""
 
     @abstractmethod
-    def calculate_hash(self, html_page: str) -> str:
+    async def calculate_hash(self, html_page: str) -> str:
         raise NotImplementedError
