@@ -13,6 +13,8 @@ sqlalchemy = {extras = ["asyncio"], version = "^2.0.48"}
 alembic = "^1.18.4"
 asyncpg = "^0.31.0"
 lxml = "^6.0.2"
+pydantic = "^2.12.5"
+pydantic-settings = "^2.13.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.3.1"
