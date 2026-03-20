@@ -12,6 +12,7 @@ beautifulsoup4 = "^4.14.3"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.48"}
 alembic = "^1.18.4"
 asyncpg = "^0.31.0"
+lxml = "^6.0.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.3.1"
