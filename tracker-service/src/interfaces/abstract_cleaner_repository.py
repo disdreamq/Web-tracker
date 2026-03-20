@@ -5,6 +5,6 @@ class ICleanerRepository(ABC):
     """Interface for HTML cleaner. Removes garbage HTML tags"""
 
     @abstractmethod
-    async def clear(self, html_page: str) -> str:
+    async def clear_html(self, html_page: str) -> str:
         raise NotImplementedError
 
