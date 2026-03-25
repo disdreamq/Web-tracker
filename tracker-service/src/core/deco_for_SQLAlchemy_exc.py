@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.core.exceptions import (
     DataBaseException,
