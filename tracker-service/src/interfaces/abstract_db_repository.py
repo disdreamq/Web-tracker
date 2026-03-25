@@ -12,7 +12,7 @@ class IDBepository[T](ABC):
     """
 
     @abstractmethod
-    async def create(self, *args, **kwargs) -> T | None:
+    async def create(self, *args, **kwargs) -> T:
         raise NotImplementedError
 
     @abstractmethod
