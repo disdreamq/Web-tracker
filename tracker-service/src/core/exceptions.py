@@ -24,10 +24,21 @@ class PageConnectionError(BaseException):
     pass
 
 
+class ValidationException(BaseException):
+    pass
+
+
+class DataBaseException(BaseException):
+    pass
+
+
 class PageInvalidURLError(BaseException):
+    pass
+
+
+class UniqueURLError(BaseException):
     pass
 
 
 class UnexpectedException(BaseException):
     pass
-
