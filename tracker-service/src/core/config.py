@@ -1,9 +1,12 @@
 import logging
 from functools import lru_cache
+from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 
 class Settings(BaseSettings):
@@ -33,16 +36,12 @@ class Settings(BaseSettings):
     def redis_url(self) -> str:
         return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_database}"
 
-    # Auth
-    secret_key: str = ""
-    alghoritm: str = ""
-
-    # CORS
-    CORS_ORIGINS: list[str] = []
-
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(extra="ignore")
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+print(get_settings().db_url)
