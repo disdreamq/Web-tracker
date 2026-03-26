@@ -1,7 +1,5 @@
 from logging import getLogger
 
-import validators
-
 from src.core.deco_for_SQLAlchemy_exc import handle_service_exceptions
 from src.core.exceptions import UniqueURLError
 from src.interfaces.abstract_db_repository import IDBepository
@@ -17,8 +15,6 @@ class SiteService:
 
     @handle_service_exceptions
     async def create(self, site: SSiteCreate) -> SSiteDTO:
-        if not validators.url(SSiteCreate.url):
-            raise ValueError
 
         if self.repo.get_by_url(site.url):
             raise UniqueURLError(
