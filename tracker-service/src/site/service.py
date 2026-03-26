@@ -3,12 +3,13 @@ from logging import getLogger
 from src.core.deco_for_SQLAlchemy_exc import handle_service_exceptions
 from src.core.exceptions import UniqueURLError
 from src.interfaces.abstract_db_repository import IDBepository
+from src.interfaces.abstract_site_service_interface import ISiteService
 from src.site.schemas import SSiteCreate, SSiteDTO
 
 logger = getLogger(__name__)
 
 
-class SiteService:
+class SiteService(ISiteService):
 
     def __init__(self, repo: IDBepository):
         self.repo = repo
