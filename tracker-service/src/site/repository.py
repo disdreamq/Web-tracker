@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from sqlalchemy import select
@@ -56,6 +57,14 @@ class SQLAlchemySiteRepository(IDBepository):
                 await self.session.delete(site)
                 return True
             return False
+
+    async def get_sites_stream(self, batch_size: int = 100) -> AsyncGenerator:
+        stmt = select(Site).order_by(Site.id)
+        stream = await self.session.stream(
+            stmt, execution_options={"yield_per": batch_size}
+        )
+        async for row in stream:
+            yield row.Site
 
     @asynccontextmanager
     async def _handle_db_error(self, operation: str, **context):
