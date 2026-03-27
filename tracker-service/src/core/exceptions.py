@@ -40,5 +40,17 @@ class UniqueURLError(BaseException):
     pass
 
 
+class NotFoundException(BaseException):
+    pass
+
+
+class BadDataException(BaseException):
+    pass
+
+
+class TemporaryFailException(BaseException):
+    pass
+
+
 class UnexpectedException(BaseException):
     pass
