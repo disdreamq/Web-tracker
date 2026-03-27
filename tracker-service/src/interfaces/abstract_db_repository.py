@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -29,4 +30,8 @@ class IDBepository[T](ABC):
 
     @abstractmethod
     async def delete(self, *args, **kwargs) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_sites_stream(self, *args, **kwargs) -> AsyncGenerator:
         raise NotImplementedError
