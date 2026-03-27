@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator
 
 from src.site.schemas import SSiteCreate, SSiteDTO
 
@@ -22,4 +23,8 @@ class ISiteService(ABC):
 
     @abstractmethod
     async def delete(self, url: str) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_sites_stream(self) -> AsyncGenerator:
         raise NotImplementedError
