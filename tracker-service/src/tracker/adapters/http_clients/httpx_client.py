@@ -8,6 +8,12 @@ from httpx import (
     Response,
     TimeoutException,
 )
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from src.core.exceptions import (
     PageConnectionError,
@@ -22,6 +28,12 @@ logger = logging.getLogger(__name__)
 
 
 class HTTPXClient(IHTTPClientRepository):
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((PageTimeoutError, PageConnectionError)),
+    )
     async def get(self, url: str) -> Response:
         try:
             async with AsyncClient() as client:
