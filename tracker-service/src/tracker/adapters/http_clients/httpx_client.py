@@ -27,7 +27,7 @@ from src.interfaces.abstract_http_client_repository import IHTTPClientRepository
 logger = logging.getLogger(__name__)
 
 
-class HTTPXClient(IHTTPClientRepository):
+class BaseClient(IHTTPClientRepository):
 
     @retry(
         stop=stop_after_attempt(3),

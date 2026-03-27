@@ -4,7 +4,7 @@ from src.core.exceptions import UnexpectedException
 from src.interfaces.abstract_cleaner_repository import ICleanerRepository
 
 
-class Cleaner(ICleanerRepository):
+class BaseCleaner(ICleanerRepository):
     def clear_html(self, html_page: str) -> str:
         try:
             soup = BeautifulSoup(html_page, "lxml")

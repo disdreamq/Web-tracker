@@ -5,7 +5,7 @@ from typing import TypeVar
 T = TypeVar("T")
 
 
-class IDBepository[T](ABC):
+class IDBRepository[T](ABC):
     """Interface for db repositories with base CRUD.
 
     Raises:
