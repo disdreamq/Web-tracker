@@ -22,7 +22,7 @@ from src.core.exceptions import (
     PageTimeoutError,
     UnexpectedException,
 )
-from src.interfaces.abstract_http_client_repository import IHTTPClientRepository
+from src.interfaces.http_client_interface import IHTTPClientRepository
 
 logger = logging.getLogger(__name__)
 

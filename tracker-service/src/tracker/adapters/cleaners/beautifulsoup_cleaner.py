@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 from src.core.exceptions import UnexpectedException
-from src.interfaces.abstract_cleaner_repository import ICleanerRepository
+from src.interfaces.cleaner_interface import ICleanerRepository
 
 
 class BaseCleaner(ICleanerRepository):
