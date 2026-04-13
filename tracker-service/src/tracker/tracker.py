@@ -8,16 +8,17 @@ from src.core.exceptions import (
     TemporaryFailException,
     UnexpectedException,
 )
-from src.interfaces.abstract_cleaner_repository import ICleanerRepository
-from src.interfaces.abstract_hasher_repository import IHasherRepository
-from src.interfaces.abstract_http_client_repository import IHTTPClientRepository
-from src.interfaces.abstract_site_service_interface import ISiteService
+from src.interfaces.cleaner_interface import ICleanerRepository
+from src.interfaces.hasher_interface import IHasherRepository
+from src.interfaces.http_client_interface import IHTTPClientRepository
+from src.interfaces.site_service_interface import ISiteService
+from src.interfaces.tracker_interface import ITracker
 from src.site.schemas import SSiteCreate
 
 logger = getLogger(__name__)
 
 
-class Tracker:
+class Tracker(ITracker):
     def __init__(
         self,
         site_service: ISiteService,
@@ -55,8 +56,8 @@ class Tracker:
             ) from e
 
         html_page = response.text
-        clear_content = await self.cleaner.clear_html(html_page)
-        hash = await self.hasher.calculate_hash(clear_content)
+        clear_content = self.cleaner.clear_html(html_page)
+        hash = self.hasher.calculate_hash(clear_content)
 
         return hash
 
@@ -66,10 +67,16 @@ class Tracker:
         logger.info(f"Started tracking site {url=}")
         await self.site_service.create(site_to_create)
 
-    async def check_all_sites(self) -> list[str]:
-        stream = await self.site_service.get_sites_stream()
+    async def stop_track(self, url: str) -> None:
+        logger.info(f"Stopped tracking site {url}")
+        await self.site_service.delete(url=url)
+
+    async def check_all_sites(self) -> list[str] | None:
+        stream = self.site_service.get_sites_stream()
+        if not stream:
+            return
         updated_sites = []
-        async for url, hash in stream:
+        async for url, hash in stream:  # type: ignore
             new_hash = await self.get_hash(url)
             if new_hash != hash:
                 await self.site_service.update(url, new_hash)
