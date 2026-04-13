@@ -7,5 +7,4 @@ class IHTTPClientRepository[T](ABC):
     """Interface for HTTP client"""
     @abstractmethod
     async def get(self, url: str) -> T:
-        raise NotImplementedError
-
+        pass

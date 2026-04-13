@@ -6,5 +6,5 @@ class ICleanerRepository(ABC):
 
     @abstractmethod
     def clear_html(self, html_page: str) -> str:
-        raise NotImplementedError
+        pass
 
