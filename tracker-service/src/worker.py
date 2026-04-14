@@ -1,7 +1,8 @@
 import asyncio
 from logging import getLogger
 
-from src.db.infrastructure.session import get_session
+from src.db.infrastructure.session import AsyncSessionLocal
+from src.interfaces.tracker_interface import ITracker
 from src.site.repository import SQLAlchemySiteRepository
 from src.site.service import SiteService
 from src.tracker.adapters.cleaners.beautifulsoup_cleaner import BaseCleaner
@@ -10,20 +11,13 @@ from src.tracker.adapters.http_clients.httpx_client import BaseClient
 from src.tracker.tracker import Tracker
 
 logger = getLogger(__name__)
-tracker = None
+_tracker = None
 
 
-async def prepare():
+async def prepare(current_tracker: ITracker):
     try:
-        global tracker
-        repo = SQLAlchemySiteRepository(get_session())
-        service = SiteService(repo=repo)
-        tracker = Tracker(
-            site_service=service,
-            cleaner=BaseCleaner(),
-            hasher=BaseHasher(),
-            client=BaseClient(),
-        )
+        global _tracker
+        _tracker = current_tracker
         logger.info("Created tracker")
 
     except Exception as e:
@@ -32,14 +26,22 @@ async def prepare():
 
 async def cheking_demon():
     while True:
-        if not tracker:
+        if not _tracker:
             logger.exception("Tracker not initialized")
             raise
-        if updated_sites := await tracker.check_all_sites():
-            ...  # отправка уведомлений в бота о том, что обновились сайты
-        await asyncio.sleep(3600)
+        if updated_sites := await _tracker.check_all_sites():
+            ...  # отправляем в очередь сообщение о том, какие сайты обновились
+        await asyncio.sleep(5)
 
 
 async def main():
-    await prepare()
+    repo = SQLAlchemySiteRepository(AsyncSessionLocal)
+    await prepare(
+        Tracker(
+            site_service=SiteService(repo=repo),
+            cleaner=BaseCleaner(),
+            hasher=BaseHasher(),
+            client=BaseClient(),
+        )
+    )
     await cheking_demon()
