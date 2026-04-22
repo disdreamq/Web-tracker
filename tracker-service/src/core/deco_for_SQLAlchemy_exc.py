@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.core.exceptions import (
     DataBaseException,
+    UnexpectedException,
     ValidationException,
 )
 
@@ -11,7 +12,29 @@ logger = logging.getLogger(__name__)
 
 
 def handle_service_exceptions(func):
-    """Deco for db service with exceptions handling."""
+    """
+    Decorator for service methods with database exception handling.
+
+    Catches SQLAlchemy exceptions and converts them to application-specific
+    exceptions with proper logging.
+
+    Args:
+        func: Async service method to wrap.
+
+    Returns:
+        Wrapped async function with exception handling.
+
+    Raises:
+        ValidationException: On integrity constraint violations.
+        DataBaseException: On general database errors.
+        UnexpectedException: On any other unexpected errors.
+
+    Example:
+        >>> class MyService:
+        ...     @handle_service_exceptions
+        ...     async def create(self, data):
+        ...         await repo.create(data)
+    """
 
     async def wrapper(*args, **kwargs):
         try:
@@ -27,5 +50,6 @@ def handle_service_exceptions(func):
 
         except Exception as e:
             logger.exception(f"Unexpected exception: {e}")
+            raise UnexpectedException("Unexpected error occurred") from e
 
     return wrapper
