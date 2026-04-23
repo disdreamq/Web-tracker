@@ -1,6 +1,7 @@
 from logging import getLogger
 
 from pydantic import HttpUrl
+from tenacity import RetryError
 
 from src.core.exceptions import (
     BadDataException,
@@ -101,11 +102,14 @@ class Tracker(ITracker):
                 raise TemporaryFailException(
                     f"Can not get page, response.status_code = {e.status_code}"
                 ) from None
+        except RetryError as e:
+            logger.info(f"Retry error during getting page for hash: {e}")
+            raise
         except Exception as e:
             logger.exception(f"Unexpected exception during getting page for hash: {e}")
-            # raise UnexpectedException(
-            #     "Unexpected exception duiring getting page for hash."
-            # ) from e
+            raise UnexpectedException(
+                "Unexpected exception duiring getting page for hash."
+            ) from e
 
         html_page = response.text
         clear_content = self.cleaner.clear_html(html_page)
@@ -168,9 +172,14 @@ class Tracker(ITracker):
             return
         updated_sites = []
         async for url, hash in stream:  # type: ignore
-            new_hash = await self.get_hash(url)
-            if new_hash != hash:
-                await self.site_service.update(url, new_hash)
-                updated_sites.append(url)
+            try:
+                new_hash = await self.get_hash(url)
+                if new_hash != hash:
+                    await self.site_service.update(url, new_hash)
+                    updated_sites.append(url)
+            except RetryError as e:
+                logger.info(f"Failed to get site content, site url = {url}: {e}")
+            except Exception as e:
+                logger.error(f"Failed to update site {url}: {e}")
 
         return updated_sites
