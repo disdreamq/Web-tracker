@@ -1,3 +1,11 @@
+"""
+Database session configuration and engine setup.
+
+Provides:
+- Async engine with connection pooling
+- Session factory for database operations
+"""
+
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from src.core.config import get_settings
