@@ -7,6 +7,17 @@ from src.db.base_model.base import Base
 
 
 class Site(Base):
+    """
+    Database model for tracked sites.
+
+    Attributes:
+        id: Primary key.
+        url: Unique site URL.
+        hash: Current content hash for change detection.
+        created_at: Timestamp of site creation.
+        updated_at: Timestamp of last update.
+    """
+
     __tablename__ = "sites"
 
     id: Mapped[int] = mapped_column(primary_key=True)
