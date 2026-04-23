@@ -84,3 +84,15 @@ class UnexpectedException(BaseException):
     """Exception raised for unexpected errors."""
 
     pass
+
+
+class RabbitMQConnectionError(BaseException):
+    """Exception raised when RabbitMQ connection fails."""
+
+    pass
+
+
+class RabbitMQMessageError(BaseException):
+    """Exception raised when RabbitMQ message processing fails."""
+
+    pass
