@@ -5,7 +5,35 @@ from src.interfaces.cleaner_interface import ICleanerRepository
 
 
 class BaseCleaner(ICleanerRepository):
+    """
+    HTML cleaner using BeautifulSoup.
+
+    Removes scripts, styles, and other irrelevant HTML tags,
+    then returns plain text content.
+    """
+
     def clear_html(self, html_page: str) -> str:
+        """
+        Clean HTML page from irrelevant content.
+
+        Removes scripts, styles, meta tags, navigation, footers,
+        and all HTML attributes, returning plain text.
+
+        Args:
+            html_page: Raw HTML content to clean.
+
+        Returns:
+            Cleaned text content without HTML tags.
+
+        Raises:
+            UnexpectedException: If an error occurs during cleaning.
+
+        Example:
+            >>> cleaner = BaseCleaner()
+            >>> text = cleaner.clear_html("<html><body><p>Hello</p></body></html>")
+            >>> print(text)
+            "Hello"
+        """
         try:
             soup = BeautifulSoup(html_page, "lxml")
 
