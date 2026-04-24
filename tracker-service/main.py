@@ -19,20 +19,35 @@ async def main():
     """
     Application entry point.
 
-    Starts the site tracking demon with optional RabbitMQ integration.
+    Starts two parallel processes:
+    1. Site monitoring demon (check_all_sites)
+    2. Subscription worker (listen for new sites via RabbitMQ)
     """
-    from src.worker import main as start_tracker
+    from src.consumer_worker import subscribe_worker
+    from src.producer_worker import check_demon, create_producer, create_tracker
+    from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
 
     logger = logging.getLogger(__name__)
     logger.info("Starting tracker service...")
 
+    tracker = await create_tracker()
+    producer = create_producer()
+    consumer = RabbitMQConsumer()
+
     try:
-        await start_tracker()
+        await asyncio.gather(
+            check_demon(tracker, producer),
+            subscribe_worker(tracker, consumer),
+        )
     except KeyboardInterrupt:
         logger.info("Shutdown requested...")
     except Exception as e:
         logger.exception(f"Fatal error: {e}")
         raise
+    finally:
+        await producer.close()
+        await consumer.close()
+        logger.info("Services stopped")
 
 
 if __name__ == "__main__":
