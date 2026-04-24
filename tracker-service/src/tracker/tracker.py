@@ -87,6 +87,11 @@ class Tracker(ITracker):
         """
         try:
             response = await self.client.get(url)
+            html_page = response.text
+            clear_content = self.cleaner.clear_html(html_page)
+            hash = self.hasher.calculate_hash(clear_content)
+
+            return hash
         except PageFetchError as e:
             if str(e.status_code).startswith("4"):
                 logger.exception(
@@ -110,13 +115,6 @@ class Tracker(ITracker):
             raise UnexpectedException(
                 "Unexpected exception duiring getting page for hash."
             ) from e
-
-        html_page = response.text
-        clear_content = self.cleaner.clear_html(html_page)
-        hash = self.hasher.calculate_hash(clear_content)
-
-        return hash
-
     async def start_track(self, url: str) -> None:
         """
         Start tracking a new website.
