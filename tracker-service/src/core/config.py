@@ -76,6 +76,26 @@ class Settings(BaseSettings):
         """
         return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_database}"
 
+    # RabbitMQ
+    rabbitmq_host: str = ""
+    rabbitmq_port: int = 5672
+    rabbitmq_default_user: str = ""
+    rabbitmq_default_pass: str = ""
+    rabbitmq_vhost: str = "/"
+
+    @property
+    def rabbitmq_url(self) -> str:
+        """
+        Construct RabbitMQ connection URL.
+
+        Returns:
+            Full RabbitMQ connection string (amqp protocol).
+        """
+        return (
+            f"amqp://{self.rabbitmq_default_user}:{self.rabbitmq_default_pass}"
+            f"@{self.rabbitmq_host}:{self.rabbitmq_port}{self.rabbitmq_vhost}"
+        )
+
     model_config = SettingsConfigDict(extra="ignore")
 
 
