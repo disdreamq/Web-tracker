@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Callable
 from logging import getLogger
 from typing import Any
 
+from src.core.config import get_settings
 from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
 from src.tracker.tracker import Tracker
 
@@ -46,9 +47,9 @@ async def create_site_handler(
 async def subscribe_worker(
     tracker: Tracker,
     consumer: RabbitMQConsumer,
-    queue_name: str = "new_sites",
-    exchange: str = "sites",
-    routing_key: str = "new",
+    queue_name: str | None = None,
+    exchange: str | None = None,
+    routing_key: str | None = None,
 ) -> None:
     """
     Worker that listens for new site subscription requests.
@@ -59,9 +60,9 @@ async def subscribe_worker(
     Args:
         tracker: Tracker instance for site management.
         consumer: RabbitMQ consumer instance.
-        queue_name: Queue name to subscribe to.
-        exchange: Exchange to bind to.
-        routing_key: Routing key for binding.
+        queue_name: Queue name to subscribe to (from config if None).
+        exchange: Exchange to bind to (from config if None).
+        routing_key: Routing key for binding (from config if None).
 
     Example:
         >>> tracker = await create_tracker()
@@ -69,6 +70,13 @@ async def subscribe_worker(
         >>> await subscribe_worker(tracker, consumer)
         >>> await consumer.close()
     """
+    settings = get_settings()
+
+    # Use config values if not provided
+    queue_name = queue_name or settings.rabbitmq_queue_new
+    exchange = exchange or settings.rabbitmq_exchange_name
+    routing_key = routing_key or settings.rabbitmq_routing_key_new
+
     handler = await create_site_handler(tracker)
 
     await consumer.subscribe(
@@ -78,5 +86,4 @@ async def subscribe_worker(
         routing_key=routing_key,
     )
 
-    logger.info(f"Subscribe worker started, listening on {exchange}/{routing_key}")
-    return
+    logger.info("Subscribe worker started, listening on %s/%s", exchange, routing_key)

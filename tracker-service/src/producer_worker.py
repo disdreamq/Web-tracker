@@ -1,53 +1,14 @@
 import asyncio
+import contextlib
+import signal
+from asyncio import Task
 from logging import getLogger
 
-from src.db.infrastructure.session import AsyncSessionLocal
+from src.core.config import get_settings
 from src.rabbitmq.rabbitmq_publisher import RabbitMQProducer
-from src.site.repository import SQLAlchemySiteRepository
-from src.site.service import SiteService
-from src.tracker.adapters.cleaners.beautifulsoup_cleaner import BaseCleaner
-from src.tracker.adapters.hashers.sha256_hasher import BaseHasher
-from src.tracker.adapters.http_clients.httpx_client import BaseClient
 from src.tracker.tracker import Tracker
 
 logger = getLogger(__name__)
-
-
-async def create_tracker() -> Tracker:
-    """
-    Factory function to create a configured Tracker instance.
-
-    Initializes all dependencies (repository, service, adapters)
-    and returns a ready-to-use Tracker.
-
-    Returns:
-        A Tracker instance with all injected dependencies.
-
-    Example:
-        >>> tracker = await create_tracker()
-        >>> await tracker.start_track("https://example.com")
-    """
-    repo = SQLAlchemySiteRepository(AsyncSessionLocal)
-    return Tracker(
-        site_service=SiteService(repo=repo),
-        cleaner=BaseCleaner(),
-        hasher=BaseHasher(),
-        client=BaseClient(),
-    )
-
-
-def create_producer() -> RabbitMQProducer:
-    """
-    Factory function to create a RabbitMQ producer.
-
-    Returns:
-        A configured RabbitMQProducer instance.
-
-    Example:
-        >>> producer = create_producer()
-        >>> await producer.publish("exchange", "key", {"data": "value"})
-    """
-    return RabbitMQProducer()
 
 
 async def check_demon(
@@ -60,6 +21,7 @@ async def check_demon(
 
     Runs an infinite loop that checks all sites for content changes
     and sends notifications via RabbitMQ when changes are detected.
+    Supports graceful shutdown on SIGTERM/SIGINT.
 
     Args:
         tracker: Tracker instance for checking sites.
@@ -71,33 +33,59 @@ async def check_demon(
         >>> producer = create_producer()
         >>> await check_demon(tracker, producer, check_interval=10)
     """
+    settings = get_settings()
+    check_interval = getattr(settings, "check_interval", check_interval)
+
+    shutdown_event = asyncio.Event()
+    current_check: Task | None = None
+
+    def signal_handler():
+        logger.info("Shutdown signal received, stopping gracefully...")
+        shutdown_event.set()
+
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        with contextlib.suppress(NotImplementedError):
+            loop.add_signal_handler(sig, signal_handler)
+
+    logger.info("Check demon started")
+
     try:
-        while True:
+        while not shutdown_event.is_set():
             try:
-                if updated_sites := await tracker.check_all_sites():
+                check_task = asyncio.create_task(tracker.check_all_sites())
+                current_check = check_task
+
+                if updated_sites := await check_task:
                     for url in updated_sites:
-                        await producer.publish(
-                            exchange="sites",
-                            routing_key="updated",
-                            message={"url": url, "status": "updated"},
-                        )
-                        logger.info(f"Sent update notification for: {url}")
+                        try:
+                            await producer.publish(
+                                exchange=settings.rabbitmq_exchange_name,
+                                routing_key=settings.rabbitmq_routing_key_updated,
+                                message={"url": url, "status": "updated"},
+                            )
+                            logger.info("Sent update notification for: %s", url)
+                        except Exception as e:
+                            logger.error(
+                                "Failed to publish notification for %s: %s", url, e
+                            )
+
+                try:
+                    await asyncio.wait_for(
+                        shutdown_event.wait(), timeout=check_interval
+                    )
+                    break
+                except TimeoutError:
+                    continue
+
             except Exception as e:
-                logger.error(f"Error in check demon: {e}")
-            await asyncio.sleep(check_interval)
+                logger.error("Error in check demon: %s", e)
+                await asyncio.sleep(check_interval)
+
     finally:
-        await producer.close()
+        if current_check and not current_check.done():
+            current_check.cancel()
+            with contextlib.suppress(TimeoutError, asyncio.CancelledError):
+                await asyncio.wait_for(current_check, timeout=1.0)
 
-
-async def main() -> None:
-    """
-    Application entry point.
-
-    Creates the Tracker and RabbitMQ producer, then starts
-    the site monitoring demon.
-    """
-    tracker = await create_tracker()
-    producer = create_producer()
-
-    logger.info("Tracker initialized, starting monitoring demon")
-    await check_demon(tracker, producer)
+        logger.info("Check demon stopped")

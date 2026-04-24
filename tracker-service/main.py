@@ -1,8 +1,12 @@
 import asyncio
+import contextlib
 import logging
+import signal
 import sys
 
 from src.core.config import get_settings
+from src.di import create_producer, create_tracker
+from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
 
 # Configure logging
 settings = get_settings()
@@ -24,8 +28,7 @@ async def main():
     2. Subscription worker (listen for new sites via RabbitMQ)
     """
     from src.consumer_worker import subscribe_worker
-    from src.producer_worker import check_demon, create_producer, create_tracker
-    from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
+    from src.producer_worker import check_demon
 
     logger = logging.getLogger(__name__)
     logger.info("Starting tracker service...")
@@ -34,15 +37,25 @@ async def main():
     producer = create_producer()
     consumer = RabbitMQConsumer()
 
+    shutdown_event = asyncio.Event()
+
+    def signal_handler():
+        logger.info("Shutdown signal received...")
+        shutdown_event.set()
+
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        with contextlib.suppress(NotImplementedError):
+            loop.add_signal_handler(sig, signal_handler)
+
     try:
         await asyncio.gather(
             check_demon(tracker, producer),
             subscribe_worker(tracker, consumer),
+            return_exceptions=True,
         )
-    except KeyboardInterrupt:
-        logger.info("Shutdown requested...")
     except Exception as e:
-        logger.exception(f"Fatal error: {e}")
+        logger.exception("Fatal error: %s", e)
         raise
     finally:
         await producer.close()
