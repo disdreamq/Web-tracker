@@ -1,6 +1,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import quote
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,10 +18,10 @@ class Settings(BaseSettings):
     - Logging
     - PostgreSQL database
     - Redis cache
+    - RabbitMQ
 
     Attributes:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
-        log_format: Logging format string.
         postgres_db: Database name.
         postgres_host: Database host address.
         postgres_port: Database port.
@@ -29,8 +30,12 @@ class Settings(BaseSettings):
         redis_database: Redis database number.
         redis_host: Redis host address.
         redis_port: Redis port.
-        redis_username: Redis username (optional).
         redis_password: Redis password.
+        rabbitmq_host: RabbitMQ host address.
+        rabbitmq_port: RabbitMQ port.
+        rabbitmq_default_user: RabbitMQ username.
+        rabbitmq_default_pass: RabbitMQ password.
+        rabbitmq_vhost: RabbitMQ virtual host.
 
     Example:
         >>> settings = get_settings()
@@ -39,13 +44,12 @@ class Settings(BaseSettings):
     """
 
     # Logging
-    log_level: str = ""
-    log_format: str = ""
+    log_level: str = "INFO"
 
     # PostgreSQL
     postgres_db: str = ""
     postgres_host: str = ""
-    postgres_port: int = 0
+    postgres_port: int = 5432
     postgres_user: str = ""
     postgres_password: str = ""
 
@@ -61,26 +65,15 @@ class Settings(BaseSettings):
 
     # Redis
     redis_database: int = 0
-    redis_host: str = ""
-    redis_port: int = 0
-    redis_username: str = ""
+    redis_host: str = "localhost"
+    redis_port: int = 6379
     redis_password: str = ""
 
-    @property
-    def redis_url(self) -> str:
-        """
-        Construct Redis connection URL.
-
-        Returns:
-            Full Redis connection string.
-        """
-        return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_database}"
-
     # RabbitMQ
-    rabbitmq_host: str = ""
+    rabbitmq_host: str = "localhost"
     rabbitmq_port: int = 5672
-    rabbitmq_default_user: str = ""
-    rabbitmq_default_pass: str = ""
+    rabbitmq_default_user: str = "guest"
+    rabbitmq_default_pass: str = "guest"
     rabbitmq_vhost: str = "/"
 
     @property
@@ -92,9 +85,17 @@ class Settings(BaseSettings):
             Full RabbitMQ connection string (amqp protocol).
         """
         return (
-            f"amqp://{self.rabbitmq_default_user}:{self.rabbitmq_default_pass}"
+            f"amqp://{self.rabbitmq_default_user}:"
+            f"{quote(self.rabbitmq_default_pass, safe='')}"
             f"@{self.rabbitmq_host}:{self.rabbitmq_port}{self.rabbitmq_vhost}"
         )
+
+    # RabbitMQ queues and exchanges
+    rabbitmq_exchange_name: str = "sites"
+    rabbitmq_queue_new: str = "new_sites"
+    rabbitmq_queue_updated: str = "updated_sites"
+    rabbitmq_routing_key_new: str = "new"
+    rabbitmq_routing_key_updated: str = "updated"
 
     model_config = SettingsConfigDict(extra="ignore")
 
