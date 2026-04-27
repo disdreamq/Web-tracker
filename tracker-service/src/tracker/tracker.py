@@ -95,26 +95,34 @@ class Tracker(ITracker):
         except PageFetchError as e:
             if str(e.status_code).startswith("4"):
                 logger.exception(
-                    f"Bad data exception during getting page for hash: {e}"
+                    "Bad data exception during getting page for hash: %s", e
                 )
                 raise BadDataException(
-                    f"Cannot get acces to the page, response.status_code = {e.status_code}"
+                    f"Cannot get acces to the page, response.status_code = {e.status_code}"  # noqa: E501
                 ) from None
-            if str(e.status_code).startswith("5"):
+            elif str(e.status_code).startswith("5"):
                 logger.exception(
-                    f"Temporary exception during getting page for hash: {e}"
+                    "Temporary exception during getting page for hash: %s", e
                 )
                 raise TemporaryFailException(
                     f"Can not get page, response.status_code = {e.status_code}"
                 ) from None
+            else:
+                logger.exception("Page fetch error during getting page for hash: %s", e)
+                raise UnexpectedException(
+                    f"Unexpected status code {e.status_code} when fetching page"
+                ) from e
         except RetryError as e:
-            logger.info(f"Retry error during getting page for hash: {e}")
-            raise
+            logger.info("Retry error during getting page for hash: %s", e)
+            raise TemporaryFailException(
+                f"Failed to fetch page after retries: {url}"
+            ) from e
         except Exception as e:
             logger.exception(f"Unexpected exception during getting page for hash: {e}")
             raise UnexpectedException(
                 "Unexpected exception duiring getting page for hash."
             ) from e
+
     async def start_track(self, url: str) -> None:
         """
         Start tracking a new website.
