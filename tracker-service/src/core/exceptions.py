@@ -26,73 +26,73 @@ class PageFetchError(BaseAppException):
         self.status_code = status_code
 
 
-class PageTimeoutError(BaseException):
+class PageTimeoutError(BaseAppException):
     """Exception raised when page request times out."""
 
     pass
 
 
-class PageConnectionError(BaseException):
+class PageConnectionError(BaseAppException):
     """Exception raised when page connection fails."""
 
     pass
 
 
-class ValidationException(BaseException):
+class ValidationException(BaseAppException):
     """Exception raised for validation errors."""
 
     pass
 
 
-class DataBaseException(BaseException):
+class DataBaseException(BaseAppException):
     """Exception raised for database errors."""
 
     pass
 
 
-class PageInvalidURLError(BaseException):
+class PageInvalidURLError(BaseAppException):
     """Exception raised for invalid URL errors."""
 
     pass
 
 
-class UniqueURLError(BaseException):
+class UniqueURLError(BaseAppException):
     """Exception raised when unique constraint is violated."""
 
     pass
 
 
-class NotFoundException(BaseException):
+class NotFoundException(BaseAppException):
     """Exception raised when requested resource is not found."""
 
     pass
 
 
-class BadDataException(BaseException):
+class BadDataException(BaseAppException):
     """Exception raised for invalid or bad data."""
 
     pass
 
 
-class TemporaryFailException(BaseException):
+class TemporaryFailException(BaseAppException):
     """Exception raised for temporary failures (retryable)."""
 
     pass
 
 
-class UnexpectedException(BaseException):
+class UnexpectedException(BaseAppException):
     """Exception raised for unexpected errors."""
 
     pass
 
 
-class RabbitMQConnectionError(BaseException):
+class RabbitMQConnectionError(BaseAppException):
     """Exception raised when RabbitMQ connection fails."""
 
     pass
 
 
-class RabbitMQMessageError(BaseException):
+class RabbitMQMessageError(BaseAppException):
     """Exception raised when RabbitMQ message processing fails."""
 
     pass
