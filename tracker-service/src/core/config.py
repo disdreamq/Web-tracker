@@ -4,6 +4,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from dotenv import load_dotenv
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,28 @@ class Settings(BaseSettings):
     rabbitmq_queue_updated: str = "updated_sites"
     rabbitmq_routing_key_new: str = "new"
     rabbitmq_routing_key_updated: str = "updated"
+
+    # Check interval for monitoring demon
+    check_interval: int = 5
+
+    @field_validator("check_interval")
+    @classmethod
+    def check_interval_must_be_positive(cls, v: int) -> int:
+        """
+        Validate that check_interval is positive.
+
+        Args:
+            v: Check interval value in seconds.
+
+        Returns:
+            Validated check interval value.
+
+        Raises:
+            ValueError: If check_interval is less than 1.
+        """
+        if v < 1:
+            raise ValueError("check_interval must be at least 1")
+        return v
 
     model_config = SettingsConfigDict(extra="ignore")
 
