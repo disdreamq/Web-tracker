@@ -99,7 +99,7 @@ class SiteService(ISiteService):
         return
 
     @handle_service_exceptions
-    async def update(self, url, hash_to_update) -> SSiteDTO | None:
+    async def update(self, url: str, hash_to_update: str) -> SSiteDTO | None:
         """
         Update site hash.
 
@@ -117,9 +117,12 @@ class SiteService(ISiteService):
             return SSiteDTO.model_validate(site)
         return
 
-    async def get_sites_stream(self) -> AsyncGenerator:
+    async def get_sites_stream(self) -> AsyncGenerator[tuple[str, str], None]:
         """
         Return a stream of all sites for batch processing.
+
+        Handles errors during iteration to prevent stream interruption.
+        Logs errors and continues with next site.
 
         Yields:
             Tuples of (url, hash) for each site.
@@ -129,10 +132,14 @@ class SiteService(ISiteService):
             ...     process(url, hash)
         """
         stream = self.repo.get_sites_stream()
-        async for site in stream:  # type: ignore #
-            url = site.url
-            hash = site.hash
-            yield (url, hash)
+        async for site in stream:  # type: ignore
+            try:
+                url = site.url
+                hash = site.hash
+                yield (url, hash)
+            except Exception as e:
+                logger.error("Error processing site in stream: %s", e)
+                continue
 
     @handle_service_exceptions
     async def delete(self, url) -> bool:
