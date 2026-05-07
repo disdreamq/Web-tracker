@@ -6,3 +6,6 @@ __pycache__
 .redis_data
 .pgadmin_data
 test_server/
+.mypy_cache/
+.ruff.cache/
+.ruff.lock/
