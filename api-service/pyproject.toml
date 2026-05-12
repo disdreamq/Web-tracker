@@ -1,23 +1,27 @@
-[tool.poetry]
+[project]
 name = "api-service"
 version = "0.1.0"
 description = ""
-authors = ["disdreamq <wlad050303@yandex.ru>"]
-readme = ""
+authors = [{name = "disdreamq", email = "wlad050303@yandex.ru"}]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.13,<0.116.0",
+    "uvicorn[standard]>=0.34.3,<0.35.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "^0.115.13"
-uvicorn = {extras = ["standard"], version = "^0.34.3"}
-
-[tool.poetry.group.dev.dependencies]
-black = "^26.3.1"
-mypy = "^1.19.1"
-ruff = "^0.15.6"
+[project.optional-dependencies]
+dev = [
+    "black>=26.3.1,<27.0.0",
+    "mypy>=1.19.1,<2.0.0",
+    "ruff>=0.15.6,<0.16.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [tool.ruff]
 line-length = 88
