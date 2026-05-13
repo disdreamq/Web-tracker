@@ -6,7 +6,7 @@ Factory functions for creating application components with proper dependency inj
 
 from src.core.config import get_settings
 from src.db.infrastructure.session import AsyncSessionLocal
-from src.rabbitmq.rabbitmq_publisher import RabbitMQProducer
+from src.rabbitmq.rabbit_publisher import RabbitMQProducer
 from src.site.repository import SQLAlchemySiteRepository
 from src.site.service import SiteService
 from src.tracker.adapters.cleaners.beautifulsoup_cleaner import BaseCleaner
