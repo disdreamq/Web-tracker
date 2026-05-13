@@ -3,49 +3,34 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.interfaces.db_interface import IDBRepository
 from src.user.model import User
 
 logger = logging.getLogger(__name__)
 
 
-class SQLAlchemyUserRepository:
+class SQLAlchemyUserRepository(IDBRepository):
     """
     Repository for working with users via SQLAlchemy.
 
     Implements CRUD operations using async SQLAlchemy
-    with automatic transaction and error handling.
+    with error handling. Sessions are passed from outside.
     """
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
-        """
-        Initialize repository with database session.
-
-        Args:
-            session_factory: Factory for async SQLAlchemy sessions.
-        """
-        self.session_factory = session_factory
-
-    @asynccontextmanager
-    async def _get_session(self):
-        async with self.session_factory() as session:
-            try:
-                yield session
-                await session.commit()
-            except Exception:
-                await session.rollback()
-                raise
-            finally:
-                await session.close()
-
     async def create(
-        self, email: str, password: str, tracking_sites: list[str] | None = None
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
+        tracking_sites: list[str] | None = None,
     ) -> User:
         """
         Create a new user record in the database.
 
         Args:
+            session: Async SQLAlchemy session.
             email: User email.
             password: User password hash.
             tracking_sites: List of tracked site URLs.
@@ -53,9 +38,7 @@ class SQLAlchemyUserRepository:
         Returns:
             Created User model.
         """
-        async with self._handle_db_error(
-            operation="Create", email=email
-        ), self._get_session() as session:
+        async with self._handle_db_error(operation="Create", email=email):
             user_to_add = User(
                 email=email,
                 password=password,
@@ -65,54 +48,51 @@ class SQLAlchemyUserRepository:
             await session.flush()
             return user_to_add
 
-    async def get_by_id(self, id: int) -> User | None:
+    async def get_by_id(self, session: AsyncSession, id: int) -> User | None:
         """
         Get a user by ID.
 
         Args:
+            session: Async SQLAlchemy session.
             id: User ID.
 
         Returns:
             User model or None.
         """
-        async with self._handle_db_error(
-            operation="Get by id", id=id
-        ), self._get_session() as session:
+        async with self._handle_db_error(operation="Get by id", id=id):
             stmt = select(User).where(User.id == id)
             result = await session.execute(stmt)
             return result.scalar_one_or_none()
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, session: AsyncSession, email: str) -> User | None:
         """
         Get a user by email.
 
         Args:
+            session: Async SQLAlchemy session.
             email: User email.
 
         Returns:
             User model or None.
         """
-        async with self._handle_db_error(
-            operation="Get by email", email=email
-        ), self._get_session() as session:
+        async with self._handle_db_error(operation="Get by email", email=email):
             stmt = select(User).where(User.email == email)
             result = await session.execute(stmt)
             return result.scalar_one_or_none()
 
-    async def update(self, id: int, **kwargs) -> User | None:
+    async def update(self, session: AsyncSession, id: int, **kwargs) -> User | None:
         """
         Update user fields.
 
         Args:
+            session: Async SQLAlchemy session.
             id: User ID.
             **kwargs: Fields to update.
 
         Returns:
             Updated User model or None.
         """
-        async with self._handle_db_error(
-            operation="Update", id=id, **kwargs
-        ), self._get_session() as session:
+        async with self._handle_db_error(operation="Update", id=id, **kwargs):
             stmt = select(User).where(User.id == id)
             result = await session.execute(stmt)
             user = result.scalar_one_or_none()
@@ -125,17 +105,18 @@ class SQLAlchemyUserRepository:
                 return user
             return None
 
-    async def delete(self, id: int) -> bool:
+    async def delete(self, session: AsyncSession, id: int) -> bool:
         """
         Delete a user by ID.
 
         Args:
+            session: Async SQLAlchemy session.
             id: User ID.
 
         Returns:
             True if deleted, False if not found.
         """
-        async with self._get_session() as session:
+        async with self._handle_db_error(operation="Delete", id=id):
             stmt = select(User).where(User.id == id)
             result = await session.execute(stmt)
             user = result.scalar_one_or_none()
@@ -143,7 +124,6 @@ class SQLAlchemyUserRepository:
                 await session.delete(user)
                 return True
             return False
-
 
     @asynccontextmanager
     async def _handle_db_error(self, operation: str, **context):
