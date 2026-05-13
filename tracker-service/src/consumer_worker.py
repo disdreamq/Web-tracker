@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import Any
 
 from src.core.config import get_settings
-from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
+from src.rabbitmq.rabbit_consumer import RabbitMQConsumer
 from src.tracker.tracker import Tracker
 
 logger = getLogger(__name__)

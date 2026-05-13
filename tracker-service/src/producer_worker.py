@@ -5,7 +5,7 @@ from asyncio import Task
 from logging import getLogger
 
 from src.core.config import get_settings
-from src.rabbitmq.rabbitmq_publisher import RabbitMQProducer
+from src.rabbitmq.rabbit_publisher import RabbitMQProducer
 from src.tracker.tracker import Tracker
 
 logger = getLogger(__name__)

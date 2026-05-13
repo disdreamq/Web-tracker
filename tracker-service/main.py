@@ -6,7 +6,7 @@ import sys
 
 from src.core.config import get_settings
 from src.di import create_producer, create_tracker
-from src.rabbitmq.rabbitmq_consumer import RabbitMQConsumer
+from src.rabbitmq.rabbit_consumer import RabbitMQConsumer
 
 # Configure logging
 settings = get_settings()
