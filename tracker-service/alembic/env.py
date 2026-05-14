@@ -18,8 +18,9 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.site.model import Site #noqa
-from src.db.base_model.base import Base #noqa
+from src.site.model import Site  # noqa
+from src.db.base_model.base import Base  # noqa
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -27,7 +28,9 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 from src.core.config import get_settings
+
 config.set_main_option("sqlalchemy.url", get_settings().db_url.replace("+asyncpg", ""))
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -67,9 +70,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
