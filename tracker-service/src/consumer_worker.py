@@ -3,14 +3,14 @@ from logging import getLogger
 from typing import Any
 
 from src.core.config import get_settings
+from src.interfaces.tracker_interface import ITracker
 from src.rabbitmq.rabbit_consumer import RabbitMQConsumer
-from src.tracker.tracker import Tracker
 
 logger = getLogger(__name__)
 
 
 async def create_site_handler(
-    tracker: Tracker,
+    tracker: ITracker,
 ) -> Callable[[dict[str, Any]], Awaitable[None]]:
     """
     Create a message handler for new site subscriptions.
@@ -45,7 +45,7 @@ async def create_site_handler(
 
 
 async def subscribe_worker(
-    tracker: Tracker,
+    tracker: ITracker,
     consumer: RabbitMQConsumer,
     queue_name: str | None = None,
     exchange: str | None = None,

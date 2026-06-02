@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 
 class ITracker(ABC):
@@ -18,7 +20,9 @@ class ITracker(ABC):
         pass
 
     @abstractmethod
-    async def start_track(self, url: str) -> None:
+    async def start_track(
+        self, url: str
+    ) -> Callable[[dict[str, Any]], Awaitable[None]]:
         """
         Start tracking a website.
 
