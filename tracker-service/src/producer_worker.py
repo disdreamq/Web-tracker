@@ -86,6 +86,8 @@ async def check_demon(
         if current_check and not current_check.done():
             current_check.cancel()
             with contextlib.suppress(TimeoutError, asyncio.CancelledError):
-                await asyncio.wait_for(current_check, timeout=5.0)
+                await current_check
+
+        await producer.close()
 
         logger.info("Check demon stopped")
