@@ -35,7 +35,7 @@ class IConnectionManager(ABC):
         pass
 
     @abstractmethod
-    async def send_to_user(self, user_id: int, message: dict):
+    async def send_to_user(self, message: dict):
         """Send a JSON message to all active connections of a user.
 
         Args:
