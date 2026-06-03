@@ -9,7 +9,7 @@ from src.rabbitmq.rabbit_consumer import RabbitMQConsumer
 logger = getLogger(__name__)
 
 
-async def create_site_handler(
+async def _create_handler(
     tracker: ITracker,
 ) -> Callable[[dict[str, Any]], Awaitable[None]]:
     """
@@ -77,7 +77,7 @@ async def subscribe_worker(
     exchange = exchange or settings.rabbitmq_exchange_name
     routing_key = routing_key or settings.rabbitmq_routing_key_new
 
-    handler = await create_site_handler(tracker)
+    handler = await _create_handler(tracker)
 
     await consumer.subscribe(
         queue_name=queue_name,
