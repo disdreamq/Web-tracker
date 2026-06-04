@@ -1,7 +1,7 @@
 import logging
 
 from src.user.repository import SQLAlchemyUserRepository
-from src.user.schemas import UserCreate, UserDTO, UserUpdate
+from src.user.schemas import SUserDTO, UserCreate, UserUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class UserService:
         """
         self.repo = repo
 
-    async def create(self, user_to_create: UserCreate) -> UserDTO:
+    async def create(self, user_to_create: UserCreate) -> SUserDTO:
         """
         Create a new user record in the database.
 
@@ -57,9 +57,9 @@ class UserService:
             tracking_sites=user_to_create.tracking_sites,
         )
         logger.info(f"Added user to database: email = {user_to_create.email}")
-        return UserDTO.model_validate(user_in_db)
+        return SUserDTO.model_validate(user_in_db)
 
-    async def get_by_email(self, email: str) -> UserDTO | None:
+    async def get_by_email(self, email: str) -> SUserDTO | None:
         """
         Get a user by email.
 
@@ -70,10 +70,10 @@ class UserService:
             User DTO or None if not found.
         """
         if user := await self.repo.get_by_email(email):
-            return UserDTO.model_validate(user)
+            return SUserDTO.model_validate(user)
         return None
 
-    async def get_by_id(self, id: int) -> UserDTO | None:
+    async def get_by_id(self, id: int) -> SUserDTO | None:
         """
         Get a user by ID.
 
@@ -84,10 +84,10 @@ class UserService:
             User DTO or None if not found.
         """
         if user := await self.repo.get_by_id(id):
-            return UserDTO.model_validate(user)
+            return SUserDTO.model_validate(user)
         return None
 
-    async def update(self, id: int, user_update: UserUpdate) -> UserDTO | None:
+    async def update(self, id: int, user_update: UserUpdate) -> SUserDTO | None:
         """
         Update user fields.
 
@@ -113,7 +113,7 @@ class UserService:
             user_in_db = await self.repo.update(id=id, **update_data)
             if user_in_db:
                 logger.info(f"Updated user in database: id = {id}")
-                return UserDTO.model_validate(user_in_db)
+                return SUserDTO.model_validate(user_in_db)
         return None
 
     async def delete(self, id: int) -> bool:
