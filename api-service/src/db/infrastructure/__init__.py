@@ -1,3 +1,3 @@
-from .session import AsyncSessionLocal, engine
+from .session import AsyncSessionMaker, engine
 
-__all__ = ["engine", "AsyncSessionLocal"]
+__all__ = ["engine", "AsyncSessionMaker"]
