@@ -5,7 +5,7 @@ from typing import Any
 from aio_pika import DeliveryMode, Message
 from aio_pika.abc import AbstractChannel, AbstractExchange
 
-from src.core.exceptions import RabbitMQMessageError
+from src.core.exceptions.app import RabbitMQMessageError
 from src.interfaces.rabbit_producer_interface import IRabbitMQProducer
 from src.rabbitmq.rabbit_connection import get_channel
 

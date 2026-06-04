@@ -18,4 +18,4 @@ engine = create_async_engine(
     max_overflow=30,
 )
 
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)
+AsyncSessionMaker = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)

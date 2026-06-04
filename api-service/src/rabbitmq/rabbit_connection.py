@@ -10,7 +10,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractChannel, AbstractRobustConnection
 
 from src.core.config import get_settings as settings
-from src.core.exceptions import RabbitMQConnectionError
+from src.core.exceptions.app import RabbitMQConnectionError
 
 
 async def get_rabbitmq_connection() -> AbstractRobustConnection:

@@ -2,11 +2,11 @@ import logging
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from src.core.exceptions import (
+from src.core.exceptions.app import (
     DataBaseException,
     UnexpectedException,
-    ValidationException,
 )
+from src.core.exceptions.http import ValidationException
 
 logger = logging.getLogger(__name__)
 
