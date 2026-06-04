@@ -3,29 +3,22 @@ FastAPI dependencies for database session handling.
 """
 
 from collections.abc import AsyncGenerator
+from logging import getLogger
 
-from fastapi import HTTPException, status
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from src.db.infrastructure.session import AsyncSessionLocal
+from src.db.infrastructure.session import AsyncSessionMaker
+
+logger = getLogger(__name__)
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session_factory() -> AsyncGenerator[async_sessionmaker[AsyncSession]]:
     """
-    Dependency for getting a database session.
-
-    Creates and yields an async SQLAlchemy session, ensuring proper cleanup.
+    Dependency for getting a database session maker.
     """
-    session: AsyncSession = AsyncSessionLocal()
     try:
-        yield session
-        await session.commit()
+        yield AsyncSessionMaker
     except OperationalError as e:
-        await session.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database connection error",
-        ) from e
-    finally:
-        await session.close()
+        logger.error(f"Database connection error: {e}")
+        raise e
