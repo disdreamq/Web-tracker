@@ -99,6 +99,10 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(extra="ignore")
 
+    # Security
+    secret_key: str = ""
+    alghoritm: str = "HS256"
+
 
 @lru_cache
 def get_settings() -> Settings:
